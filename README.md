@@ -38,7 +38,7 @@ npm install --save-dev puppeteer
 
 ```Dockerfile
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM tiangolo/node-frontend:node-10 as build-stage
+FROM tiangolo/node-frontend:10 as build-stage
 
 ...
 
@@ -160,7 +160,7 @@ COPY /nginx.conf /etc/nginx/conf.d/default.conf
 
 ```Dockerfile
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM tiangolo/node-frontend:node-10 as build-stage
+FROM tiangolo/node-frontend:10 as build-stage
 
 WORKDIR /app
 
