@@ -4,7 +4,7 @@
 
 # Node.js frontend development with Chrome Headless tests
 
-This image simplifies the process of creating a full Node.js environment for frontend development with multistage building.
+This Docker image simplifies the process of creating a full Node.js environment for frontend development with multistage building.
 
 It includes all the dependencies for Puppeteer, so you can just `npm install puppeteer` and it should work.
 
