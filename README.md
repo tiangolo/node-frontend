@@ -231,6 +231,57 @@ It's faster and simpler to develop locally. But once you think you got it, build
 
 * Have fun.
 
+## Advanced Nginx configuration
+
+You can include more Nginx configurations by copying them to `/etc/nginx/conf.d/`, beside the included Nginx configuration.
+
+By default, this Nginx configuration routes everything to your frontend app (to your `index.html`). But if you want some specific routes to instead return, for example, an HTTP 404 "Not Found" error, you can include more nginx `.conf` files in the directory: `/etc/nginx/extra-conf.d/`.
+
+For example, if you want your final Nginx to send 404 errors to `/api` and `/docs` you can create a file `nginx-backend-not-found.conf:
+
+```Nginx
+location /api {
+    return 404;
+}
+location /docs {
+    return 404;
+}
+```
+
+And in your `Dockerfile` add a line:
+
+```Dockerfile
+COPY ./nginx-backend-not-found.conf /etc/nginx/extra-conf.d/nginx-backend-not-found.conf
+```
+
+### Details
+
+These files will be included inside of an "[Nginx `server` directive](https://nginx.org/en/docs/http/ngx_http_core_module.html#server)".
+
+So, you have to put contents that can be included there, like `location`.
+
+---
+
+This functionality was made to solve a very specific but common use case:
+
+Let's say you have a load balancer on top of your frontend (and probably backend too), and it sends everything that goes to `/api/` to the backend, and `/docs` to an API documentation site (handled by the backend or other service), and the rest, `/`, to your frontend.
+
+And your frontend has long-term caching for your main frontend app (as would be normal).
+
+And then at some point, during development or because of a bug, your backend, that serves `/docs` is down.
+
+You try to go there, but because it's down, your load balancer falls back to what handles `/`, your frontend.
+
+So, you only see your same frontend instead of the `/docs`.
+
+Then you check the logs in your backend, you fix it, and try to load `/docs` again.
+
+But because the frontend had long-term caching, it still shows your same frontend at `/docs`, even though your backend is back online. Then you have to load it in an incognito window, or fiddle with the local cache of your frontend, etc.
+
+By making Nginx simply respond with 404 errors when requested for `/docs`, you avoid that problem.
+
+And because you have a load balancer on top, redirecting requests to `/docs` to the correct service, Nginx would never actually return that 404. Only in the case of a failure, or during development.
+
 ## License
 
 This project is licensed under the terms of the MIT license.
