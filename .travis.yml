@@ -3,6 +3,9 @@ sudo: required
 services:
   - docker
 
+script:
+  - echo "Not implemented"
+
 deploy:
   provider: script
   script: bash scripts/build-push.sh
