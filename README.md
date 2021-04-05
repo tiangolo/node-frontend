@@ -2,7 +2,7 @@
 
 ## Supported tags and respective `Dockerfile` links
 
-* [`10`, `latest` _(Dockerfile)_](https://github.com/tiangolo/node-frontend/blob/master/Dockerfile)
+* [`14`, `latest` _(Dockerfile)_](https://github.com/tiangolo/node-frontend/blob/master/Dockerfile)
 
 # Node.js frontend development with Chrome Headless tests
 
@@ -44,7 +44,7 @@ npm install --save-dev puppeteer
 
 ```Dockerfile
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM tiangolo/node-frontend:10 as build-stage
+FROM tiangolo/node-frontend:14 as build-stage
 
 ...
 
@@ -166,7 +166,7 @@ COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
 
 ```Dockerfile
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM tiangolo/node-frontend:10 as build-stage
+FROM tiangolo/node-frontend:14 as build-stage
 
 WORKDIR /app
 
