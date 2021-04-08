@@ -5,10 +5,12 @@ set -x
 
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
-docker build -t tiangolo/node-frontend:10 .
+TAG=${TAG:-10}
 
-docker build -t tiangolo/node-frontend:latest .
+docker build -t tiangolo/node-frontend:${TAG} .
 
-docker push tiangolo/node-frontend:10
+docker tag tiangolo/node-frontend:${TAG} tiangolo/node-frontend:latest
+
+docker push tiangolo/node-frontend:${TAG}
 
 docker push tiangolo/node-frontend:latest
