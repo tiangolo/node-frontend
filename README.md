@@ -284,6 +284,12 @@ By making Nginx simply respond with 404 errors when requested for `/docs`, you a
 
 And because you have a load balancer on top, redirecting requests to `/docs` to the correct service, Nginx would never actually return that 404. Only in the case of a failure, or during development.
 
+## Release Notes
+
+### Latest Changes
+
+### Initial Release
+
 ## License
 
 This project is licensed under the terms of the MIT license.
