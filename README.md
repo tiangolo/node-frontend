@@ -284,6 +284,18 @@ By making Nginx simply respond with 404 errors when requested for `/docs`, you a
 
 And because you have a load balancer on top, redirecting requests to `/docs` to the correct service, Nginx would never actually return that 404. Only in the case of a failure, or during development.
 
+## Release Notes
+
+### Latest Changes
+
+#### Internal
+
+* 🔧 Add funding. PR [#15](https://github.com/tiangolo/node-frontend/pull/15) by [@tiangolo](https://github.com/tiangolo).
+* 👷 Add issue-manager GitHub Action. PR [#14](https://github.com/tiangolo/node-frontend/pull/14) by [@tiangolo](https://github.com/tiangolo).
+* 👷 Add latest-changes GitHub Action. PR [#12](https://github.com/tiangolo/node-frontend/pull/12) by [@tiangolo](https://github.com/tiangolo).
+
+### Initial Release
+
 ## License
 
 This project is licensed under the terms of the MIT license.
