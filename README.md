@@ -290,6 +290,7 @@ And because you have a load balancer on top, redirecting requests to `/docs` to 
 
 #### Internal
 
+* 👷 Add dependabot. PR [#13](https://github.com/tiangolo/node-frontend/pull/13) by [@tiangolo](https://github.com/tiangolo).
 * 🔧 Add funding. PR [#15](https://github.com/tiangolo/node-frontend/pull/15) by [@tiangolo](https://github.com/tiangolo).
 * 👷 Add issue-manager GitHub Action. PR [#14](https://github.com/tiangolo/node-frontend/pull/14) by [@tiangolo](https://github.com/tiangolo).
 * 👷 Add latest-changes GitHub Action. PR [#12](https://github.com/tiangolo/node-frontend/pull/12) by [@tiangolo](https://github.com/tiangolo).
