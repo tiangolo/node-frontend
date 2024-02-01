@@ -290,6 +290,7 @@ And because you have a load balancer on top, redirecting requests to `/docs` to 
 
 #### Internal
 
+* ⬆ Bump tiangolo/issue-manager from 0.2.0 to 0.5.0. PR [#18](https://github.com/tiangolo/node-frontend/pull/18) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * 👷 Add dependabot. PR [#13](https://github.com/tiangolo/node-frontend/pull/13) by [@tiangolo](https://github.com/tiangolo).
 * 🔧 Add funding. PR [#15](https://github.com/tiangolo/node-frontend/pull/15) by [@tiangolo](https://github.com/tiangolo).
 * 👷 Add issue-manager GitHub Action. PR [#14](https://github.com/tiangolo/node-frontend/pull/14) by [@tiangolo](https://github.com/tiangolo).
