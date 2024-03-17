@@ -288,6 +288,10 @@ And because you have a load balancer on top, redirecting requests to `/docs` to 
 
 ### Latest Changes
 
+#### Fixes
+
+* 🐛 Fix 403 errors when the url points to a directory without an index.html. PR [#5](https://github.com/tiangolo/node-frontend/pull/5) by [@jchorl](https://github.com/jchorl).
+
 #### Internal
 
 * ⬆ Bump tiangolo/issue-manager from 0.2.0 to 0.5.0. PR [#18](https://github.com/tiangolo/node-frontend/pull/18) by [@dependabot[bot]](https://github.com/apps/dependabot).
