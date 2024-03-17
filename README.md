@@ -1,28 +1,16 @@
-[![Build Status](https://travis-ci.org/tiangolo/node-frontend.svg?branch=master)](https://travis-ci.org/tiangolo/node-frontend)
+# 🚨 DEPRECATION WARNING 🚨
 
-## Supported tags and respective `Dockerfile` links
+This was a Docker image. I'm currently not using nor recommending the Docker image, it is no longer supported.
 
-* [`10`, `latest` _(Dockerfile)_](https://github.com/tiangolo/node-frontend/blob/master/Dockerfile)
+You are better off building a Docker image from scratch, see below how. 🤓
 
-# Node.js frontend development with Chrome Headless tests
+There are more details about the deprecation at the end.
 
-This Docker image simplifies the process of creating a full Node.js environment for frontend development with multistage building.
-
-It includes all the dependencies for Puppeteer, so you can just `npm install puppeteer` and it should work.
-
-It also includes a default Nginx configuration for your frontend application, so in multi-stage Docker builds you can just copy it to an Ngnix "stage" and have an always freshly compiled production ready frontend Docker image for deployment.
-
-It is derivated from this article I wrote:
-
-> Angular in Docker with Nginx, supporting configurations / environments, built with multi-stage Docker builds and testing with Chrome Headless
-
- [in Medium](https://medium.com/@tiangolo/angular-in-docker-with-nginx-supporting-environments-built-with-multi-stage-docker-builds-bb9f1724e984), and [in GitHub](https://github.com/tiangolo/medium-posts/tree/master/angular-in-docker)
-
- ## How to use
+## Build a Frontend Docker Image
 
 ### Previous steps
 
-* Create your frontend Node.js based code (Angular, React, Vue.js).
+* Create your frontend Node.js based code (React, etc).
 
 * Create a file `.dockerignore` (similar to `.gitignore`) and include in it:
 
@@ -32,19 +20,19 @@ node_modules
 
 ...to avoid copying your `node_modules` to Docker, making things unnecessarily slower.
 
-* If you want to integrate testing as part of your frontend build inside your Docker image building process (using Chrome Headless via Puppeteer), install Puppeteer locally, so that you can test it locally too and to have it in your development dependencies in your `package.json`:
+* If you want to integrate testing as part of your frontend build inside your Docker image building process, install any dependencies you might need, for example Playwright, so that you can test it locally too and to have it in your development dependencies in your `package.json`:
 
 ```bash
-npm install --save-dev puppeteer
+npm init playwright@latest
 ```
 
 ### Dockerfile
 
-* Create a file `Dockerfile` based on this image and name the stage `build-stage`, for building:
+* Create a file `Dockerfile` for building and name the stage `build-stage`:
 
 ```Dockerfile
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM tiangolo/node-frontend:10 as build-stage
+FROM node:latest as build-stage
 
 ...
 
@@ -62,7 +50,7 @@ COPY package*.json /app/
 ...
 ```
 
-...just the `package*.json` files to install all the dependencies once and let Docker use the cache for the next builds. Instead of installing everything after every change in your source code.
+...copy just the `package*.json` files to install all the dependencies once and let Docker use the cache for the next builds. By doing this before copying the whole app code, Docker will be able to use the cache and you won't have to wait for Docker to install with `npm install` every time you change the code.
 
 * Install `npm` packages inside your `Dockerfile`:
 
@@ -74,8 +62,7 @@ RUN npm install
 ...
 ```
 
-* Copy your source code, it can be TypeScript files, `.vue` or React with JSX, it will be compiled inside Docker:
-
+* Copy your source code to the Docker image:
 
 ```Dockerfile
 ...
@@ -85,27 +72,27 @@ COPY ./ /app/
 ...
 ```
 
-* If you have integrated testing with Chrome Headless using Puppeteer, this image comes with all the dependencies for Puppeteer, so, after installing your dependencies (including `puppeteer` itself), you can just run it. E.g.:
+* If you need to pass build arguments, create a default `ARG` to be used at build time:
 
 ```Dockerfile
 ...
 
-RUN npm run test -- --browsers ChromeHeadlessNoSandbox --watch=false
+ARG VITE_API_URL=${VITE_API_URL}
+
+...
+```
+
+* If you have integrated testing, you can run your tests now:
+
+```Dockerfile
+...
+
+RUN npm run test
 
 ...
 ```
 
 ...if your tests didn't pass, they will throw an error and your build will stop. So, you will never ship a "broken" frontend Docker image to production.
-
-* If you need to pass buildtime arguments, for example in Angular, for `--configuration`s, create a default `ARG` to be used at build time:
-
-```Dockerfile
-...
-
-ARG configuration=production
-
-...
-```
 
 * Build your source frontend app as you normally would, with `npm`:
 
@@ -117,17 +104,7 @@ RUN npm run build
 ...
 ```
 
-* If you need to pass build time arguments (for example in Angular), modify the previous instruction using the previously declared `ARG`, e.g.:
-
-```Dockerfile
-...
-
-RUN npm run build -- --output-path=./dist/out --configuration $configuration
-
-...
-```
-
-...after that, you would have a fresh build of your frontend app code inside a Docker container. But if you are serving frontend (static files) you could serve them with a high performance server as Nginx, and have a leaner Docker image without all the Node.js code.
+...after that, you would have a fresh build of your frontend app code inside a Docker image. But if you are serving frontend (static files) you could serve them with a high performance server as Nginx, and have a leaner Docker image without all the Node.js code.
 
 * Create a new "stage" (just as if it was another Docker image in the same file) based on Nginx:
 
@@ -135,7 +112,7 @@ RUN npm run build -- --output-path=./dist/out --configuration $configuration
 ...
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
-FROM nginx:1.15
+FROM nginx:latest
 
 ...
 ```
@@ -145,19 +122,31 @@ FROM nginx:1.15
 ```Dockerfile
 ...
 
-COPY --from=build-stage /app/dist/out/ /usr/share/nginx/html
+COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 
 ...
 ```
 
-... make sure you change `/app/dist/out/` to the directory inside `/app/` that contains your compiled frontend code.
+* Create a file `nginx.conf` with:
 
-* This image also contains a default Nginx configuration so that you don't have to provide one. By default it routes everything to your frontend app (to your `index.html`), so that you can use "HTML5" full URLs and they will always work, even if your users type them directly in the browser. Make your Docker image copy that default configuration from the previous stage to Nginx's configurations directory:
+```Nginx
+server {
+  listen 80;
+
+  location / {
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+    try_files $uri /index.html =404;
+  }
+}
+```
+
+* This configuration routes everything to your frontend app (to your `index.html`), so that you can use full URLs and they will always work, even if your users type them directly in the browser. Make your Docker image copy that configuration to Nginx's configurations directory:
 
 ```Dockerfile
 ...
 
-COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
 ...
 ```
@@ -166,7 +155,7 @@ COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
 
 ```Dockerfile
 # Stage 0, "build-stage", based on Node.js, to build and compile the frontend
-FROM tiangolo/node-frontend:10 as build-stage
+FROM node:latest as build-stage
 
 WORKDIR /app
 
@@ -176,19 +165,19 @@ RUN npm install
 
 COPY ./ /app/
 
-RUN npm run test -- --browsers ChromeHeadlessNoSandbox --watch=false
+ARG VITE_API_URL=${VITE_API_URL}
 
-ARG configuration=production
+RUN npm run test
 
-RUN npm run build -- --output-path=./dist/out --configuration $configuration
+RUN npm run build
 
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
-FROM nginx:1.15
+FROM nginx:latest
 
-COPY --from=build-stage /app/dist/out/ /usr/share/nginx/html
+COPY --from=build-stage /app/dist/ /usr/share/nginx/html/
 
-COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 ```
 
 ### Building the Docker image
@@ -199,12 +188,12 @@ COPY --from=build-stage /nginx.conf /etc/nginx/conf.d/default.conf
 docker build -t my-frontend-project:prod .
 ```
 
-...If you had tests and added above, they will be run. Your app will be compiled and you will end up with a lean high performance Nginx server with your fresh compiled app. Ready for production.
+...If you had tests and added them above, they will be run. Your app will be compiled and you will end up with a lean high performance Nginx server with your fresh compiled app. Ready for production.
 
-* If you need to pass build time arguments (like for Angular `--configuration`s), for example if you have a "staging" environment, you can pass them like:
+* If you need to pass build time arguments, for example if you have a "staging" environment, you can pass them like:
 
 ```bash
-docker build -t my-frontend-project:stag --build-arg configuration="staging" .
+docker build -t my-frontend-project:stag --build-arg VITE_API_URL="https://staging.example.com" .
 ```
 
 ### Testing the Docker image
@@ -225,11 +214,11 @@ docker run -p 80:80 my-frontend-project:prod
 npm run start
 ```
 
-...use it. 
+...use it.
 
 It's faster and simpler to develop locally. But once you think you got it, build your Docker image and try it. You will see how it looks in the full production environment.
 
-* If you want to have Chrome Headless tests, run them locally first, as you normally would (Karma, Jasmine, Jest, etc). Using the live normal browser. Make sure you have all the configurations right. Then install Puppeteer locally and make sure it runs locally (with local Headless Chrome). Once you know it is running locally, you can add that to your `Dockerfile` and have "continuous integration" and "continuous building"... and if you want add "continuous deployment". But first make it run locally, it's easier to debug only one step at a time.
+* If you want to have tests using a (maybe headless) browser, run them locally first, as you normally would. Using the live normal browser. Make sure you have all the configurations right. Once you know it is running locally, you can add that to your `Dockerfile` and have "continuous integration" and "continuous building"... and if you want, add "continuous deployment". But first make it run locally, it's easier to debug only one step at a time.
 
 * Have fun.
 
@@ -283,6 +272,24 @@ But because the frontend had long-term caching, it still shows your same fronten
 By making Nginx simply respond with 404 errors when requested for `/docs`, you avoid that problem.
 
 And because you have a load balancer on top, redirecting requests to `/docs` to the correct service, Nginx would never actually return that 404. Only in the case of a failure, or during development.
+
+## Deprecated Image
+
+This used to be a Docker image to simplify the process of creating a full Node.js environment for frontend development with multistage building.
+
+It included all the dependencies for Puppeteer, so you could just `npm install puppeteer` and it should work.
+
+It also included a default Nginx configuration for your frontend application, with the same content above, so in multi-stage Docker builds you could copy it to an Nginx "stage".
+
+It is derived from this article I wrote:
+
+> Angular in Docker with Nginx, supporting configurations / environments, built with multi-stage Docker builds and testing with Chrome Headless
+
+ [in Medium](https://medium.com/@tiangolo/angular-in-docker-with-nginx-supporting-environments-built-with-multi-stage-docker-builds-bb9f1724e984), and [in GitHub](https://github.com/tiangolo/medium-posts/tree/master/angular-in-docker)
+
+As copying the `nginx.conf` file to the `Dockerfile` is not that much work, and the dependencies for Puppeteer are probably no longer relevant as Playwright is in many cases a better option, it doesn't make sense to keep supporting this Docker image, and it doesn't make sense for you to use it.
+
+You are better off following the instructions above. 🤓
 
 ## Release Notes
 
