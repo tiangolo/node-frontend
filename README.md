@@ -299,6 +299,10 @@ You are better off following the instructions above. 🤓
 
 * 🐛 Fix 403 errors when the url points to a directory without an index.html. PR [#5](https://github.com/tiangolo/node-frontend/pull/5) by [@jchorl](https://github.com/jchorl).
 
+#### Docs
+
+* 📝 Add deprecation and update docs. PR [#20](https://github.com/tiangolo/node-frontend/pull/20) by [@tiangolo](https://github.com/tiangolo).
+
 #### Internal
 
 * ⬆ Bump tiangolo/issue-manager from 0.2.0 to 0.5.0. PR [#18](https://github.com/tiangolo/node-frontend/pull/18) by [@dependabot[bot]](https://github.com/apps/dependabot).
